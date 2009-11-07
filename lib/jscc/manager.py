@@ -3,6 +3,7 @@ import os, sys
 from optparse import OptionParser, OptionGroup
 import yaml
 import logging
+import time
 
 from project import JSCCProject
 
@@ -102,4 +103,28 @@ default_compilation_level: simple         # possible values are: whitespace, sim
                 die(e)
    
     def watch(self, project):
-        print ">>> jscc is wathing for changes. Press Ctrl-C to stop."
+        filename, exists = self.__get_project_filename(project)
+        if not exists:
+            die("Project file doesn't exist: %s" % filename)
+
+        with open(filename, 'r') as f:
+            try:
+                p = JSCCProject(filename, yaml.load(f), compiler=self.compiler)
+            except Exception, e:
+                die(e)
+
+        try:
+            greetings = True
+            while True:
+                if greetings:
+                    print ">>> jscc is wathing for changes. Press Ctrl-C to stop."
+                    greetings = False
+                if not p.is_valid():
+                    greetings = True
+                    print "Sources changed. Recompiling..."
+                    p.make()
+                time.sleep(1)
+        except Exception, e:
+            die(e)
+        except KeyboardInterrupt:
+            print ''
