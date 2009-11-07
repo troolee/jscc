@@ -1,0 +1,37 @@
+# INSTALL
+
+1. First of all you need to install Google Closure Compiler. To do so please 
+follow:
+
+Download closure-latest.zip from http://code.google.com/closure/compiler/ page:
+
+    $ wget http://closure-compiler.googlecode.com/files/compiler-latest.zip
+
+Create directory where you want to install closure compiler:
+
+    $ mkdir ~/Google\ Closure
+ 
+Unzip the archive:
+
+    $ unzip compiler-latest.zip -d ~/Google\ Closure
+
+Next we need to create a script to execute closure compiler as easy as possible.
+Create file named "closure-compiler" in the directory where you've unpack the
+archive and put the following rows to it:
+
+    #!/bin/bash
+    java -jar "$PWD/`dirname "$0"`/compiler.jar" $*
+
+Now make it executable:
+
+    $ chmod +x ~/Google\ Closure/closure-compiler
+
+Create a symbolic link to the script somewere in your PATH:
+
+    $ ln -s ~/Google\ Closure/closure-compiler ~/bin/closure-compiler
+    
+Now test it and if all ok you will see closure compiler's help message:
+    
+    $ closure-compiler --help
+    
+
