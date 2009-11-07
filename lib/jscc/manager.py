@@ -15,8 +15,10 @@ DEFAULT_PROJECT_FILENAME = 'jscc.yaml'
 
 class Manager(object):
     def run(self, argv):
-        parser = OptionParser(usage="%prog [mode] [project]",
+        parser = OptionParser(usage="%prog [options] [mode] [project]",
                               description='The jscc is a tool that helps you compile js code using google closure compiler.')
+        
+        parser.add_option('--compiler', help='Path to the google closure compiler. By default used: closure-compiler (see INSTALL for more details)')
         
         mode_group = OptionGroup(parser, "Mode options (only specify one)")
         
@@ -78,7 +80,19 @@ default_compilation_level: simple         # possible values are: whitespace, sim
                 die(e)
            
     def update(self, project):
-        pass
+        filename, exists = self.__get_project_filename(project)
+        if not exists:
+            die("Project file doesn't exist: %s" % filename)
+        with open(filename, 'r') as f:
+            try:
+                p = JSCCProject(yaml.load(f))
+                if p.is_valid():
+                    print 'Project is up to date.'
+                    return
+                else:
+                    p.make()
+            except Exception, e:
+                die(e)
    
     def watch(self, project):
         print ">>> jscc is wathing for changes. Press Ctrl-C to stop."

@@ -1,3 +1,6 @@
+import os
+
+
 class JSCCTarget:
     def __init__(self, project, target, data):
         self.project = project
@@ -24,6 +27,20 @@ class JSCCTarget:
         else:
             raise Exception('Unsupported notation of the target %s.' % target)
             
+    def get_target_filename(self):
+        return '/'.join((self.project.source_dir, self.target))
+            
+    def __get_source_filename(self, source):
+        return '/'.join((self.project.source_dir, source))
+            
+    def is_valid(self):
+        if not os.path.exists(self.get_target_filename()):
+            return False
+        return True
+    
+    def make(self):
+        pass
+            
 
 class JSCCProject:
     def __init__(self, data):
@@ -41,3 +58,13 @@ class JSCCProject:
         
         if len(data):
             raise Exception('Unsupported option(s): %s' % ', '.join(data.keys()))
+
+    def is_valid(self):
+        for target in self.targets:
+            if not target.is_valid():
+                return False
+        return True
+    
+    def make(self):
+        for target in self.targets:
+            target.make()
