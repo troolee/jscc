@@ -1,4 +1,8 @@
 import os
+import itertools
+import logging
+from datetime import datetime
+from subprocess import call
 
 
 class JSCCTarget:
@@ -21,34 +25,63 @@ class JSCCTarget:
                 self.sources = data.pop('sources')
                 if not isinstance(self.sources, (list, tuple)):
                     raise Exception('Sources must be a list of string for the target %s.' % target)
-            self.sources.append(data.pop('source', None))
             if 'source' in data:
                 self.sources = [data.pop('source')]
         else:
             raise Exception('Unsupported notation of the target %s.' % target)
             
     def get_target_filename(self):
-        return '/'.join((self.project.source_dir, self.target))
+        return '/'.join((self.project.output_dir, self.target))
             
-    def __get_source_filename(self, source):
+    def get_source_filename(self, source):
         return '/'.join((self.project.source_dir, source))
             
     def is_valid(self):
+        logging.debug('Checking target %s', self.target)
         if not os.path.exists(self.get_target_filename()):
+            logging.debug('Need to be updated: output not found')
             return False
+        target_ctime = os.path.getctime(self.get_target_filename())
+        for s in self.sources:
+            mtime = os.path.getmtime(self.get_source_filename(s))
+            if mtime > target_ctime:
+                logging.debug('Need to be updated: Source %s changed' % s)
+                return False
+        logging.debug('Up to date')
         return True
     
     def make(self):
-        pass
+        if not self.project.compiler:
+            raise Exception('Compiler is not specified.')
+        if not self.sources:
+            return
+        
+        def get_cmd(*args):
+            args = list(args)
+            args.insert(0, self.project.compiler)
+            return args
+            
+        def get_source_args(list):
+            for s in list:
+                yield '--js'
+                yield self.get_source_filename(s)
+        
+        cmd = get_cmd('--js_output_file', self.get_target_filename(),
+                      *tuple(get_source_args(self.sources)))
+        logging.debug('>>> ' + ' '.join(cmd))
+        call(cmd)
             
 
 class JSCCProject:
-    def __init__(self, data):
+    def __init__(self, filename, data, compiler=None):
+        self.root_path = '/'.join(os.path.abspath(filename).split('/')[:-1])
+        
+        self.compiler = compiler
         self.api_version = data.pop('api_version', '1')
         if self.api_version != 1:
             raise Exception('Unsupported api version: %s' % self.api_version)
-        self.source_dir = data.pop('source_dir', 'src')
-        self.output_dir = data.pop('output_dir', 'js')
+        self.source_dir = self.root_path + '/' + data.pop('source_dir', 'src')
+        self.output_dir = self.root_path + '/' + data.pop('output_dir', 'js')
         self.default_compilation_level = data.pop('default_compilation_level', 'simple')
         if self.default_compilation_level not in ['whitespace', 'simple', 'advanced']:
             raise Exception('Unsupported level of compilation: %s' % self.default_compilation_level)
