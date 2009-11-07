@@ -2,6 +2,7 @@ from __future__ import with_statement
 import os, sys
 from optparse import OptionParser, OptionGroup
 import yaml
+import logging
 
 from project import JSCCProject
 
@@ -18,8 +19,6 @@ class Manager(object):
         parser = OptionParser(usage="%prog [options] [mode] [project]",
                               description='The jscc is a tool that helps you compile js code using google closure compiler.')
         
-        parser.add_option('--compiler', help='Path to the google closure compiler. By default used: closure-compiler (see INSTALL for more details)')
-        
         mode_group = OptionGroup(parser, "Mode options (only specify one)")
         
         mode_group.add_option('-c', '--create', action='store_const', dest='mode', const='create', help='Create a new project.')
@@ -27,10 +26,18 @@ class Manager(object):
         mode_group.add_option('-w', '--watch', action='store_const', dest='mode', const='watch', help='Monitor the project for changes and update.')
         
         parser.add_option_group(mode_group)
+
+        parser.add_option('--compiler', default='closure-compiler', help='Path to the google closure compiler. By default used: closure-compiler (see INSTALL for more details)')
+        parser.add_option('-d', '--debug', action='store_true', help='Display debug output')
                 
         (options, args) = parser.parse_args(argv)
         if len(args) > 2:
             parser.error("incorrect number of arguments")
+
+        self.compiler = options.compiler
+
+        if options.debug:
+            logging.basicConfig(level=logging.DEBUG)
 
         mode = options.mode or 'update'
         project = args[1] if len(args) > 1 else DEFAULT_PROJECT_FILENAME
@@ -75,7 +82,7 @@ default_compilation_level: simple         # possible values are: whitespace, sim
 '''
         with open(filename, 'r') as f:
             try:
-                JSCCProject(yaml.load(f))
+                JSCCProject(filename, yaml.load(f))
             except Exception, e:
                 die(e)
            
@@ -85,7 +92,7 @@ default_compilation_level: simple         # possible values are: whitespace, sim
             die("Project file doesn't exist: %s" % filename)
         with open(filename, 'r') as f:
             try:
-                p = JSCCProject(yaml.load(f))
+                p = JSCCProject(filename, yaml.load(f), compiler=self.compiler)
                 if p.is_valid():
                     print 'Project is up to date.'
                     return
