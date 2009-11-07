@@ -4,6 +4,12 @@ import logging
 from datetime import datetime
 from subprocess import call
 
+COMPILATION_LEVELS = {
+    'whitespace': 'WHITESPACE_ONLY',
+    'simple': 'SIMPLE_OPTIMIZATIONS',
+    'advanced': 'ADVANCED_OPTIMIZATIONS',
+}
+
 
 class JSCCTarget:
     def __init__(self, project, target, data):
@@ -36,12 +42,17 @@ class JSCCTarget:
     def get_source_filename(self, source):
         return '/'.join((self.project.source_dir, source))
             
-    def is_valid(self):
+    def is_valid(self, respect_project_mtime=False):
         logging.debug('Checking target %s', self.target)
         if not os.path.exists(self.get_target_filename()):
             logging.debug('Need to be updated: output not found')
             return False
         target_ctime = os.path.getctime(self.get_target_filename())
+        if respect_project_mtime:
+            project_mtime = os.path.getmtime(self.project.filename)
+            if project_mtime > target_ctime:
+                logging.debug('Need to be updated: Project file changed')
+                return False
         for s in self.sources:
             mtime = os.path.getmtime(self.get_source_filename(s))
             if mtime > target_ctime:
@@ -67,6 +78,7 @@ class JSCCTarget:
                 yield self.get_source_filename(s)
         
         cmd = get_cmd('--js_output_file', self.get_target_filename(),
+                      '--compilation_level', COMPILATION_LEVELS[self.compilation_level],
                       *tuple(get_source_args(self.sources)))
         logging.debug('>>> ' + ' '.join(cmd))
         call(cmd)
@@ -74,6 +86,7 @@ class JSCCTarget:
 
 class JSCCProject:
     def __init__(self, filename, data, compiler=None):
+        self.filename = filename
         self.root_path = '/'.join(os.path.abspath(filename).split('/')[:-1])
         
         self.compiler = compiler
@@ -92,9 +105,9 @@ class JSCCProject:
         if len(data):
             raise Exception('Unsupported option(s): %s' % ', '.join(data.keys()))
 
-    def is_valid(self):
+    def is_valid(self, respect_project_mtime=False):
         for target in self.targets:
-            if not target.is_valid():
+            if not target.is_valid(respect_project_mtime):
                 return False
         return True
     

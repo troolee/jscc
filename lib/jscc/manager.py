@@ -94,7 +94,7 @@ default_compilation_level: simple         # possible values are: whitespace, sim
         with open(filename, 'r') as f:
             try:
                 p = JSCCProject(filename, yaml.load(f), compiler=self.compiler)
-                if p.is_valid():
+                if p.is_valid(True):
                     print 'Project is up to date.'
                     return
                 else:
@@ -115,14 +115,16 @@ default_compilation_level: simple         # possible values are: whitespace, sim
 
         try:
             greetings = True
+            respect_project_mtime = True
             while True:
                 if greetings:
                     print ">>> jscc is wathing for changes. Press Ctrl-C to stop."
                     greetings = False
-                if not p.is_valid():
+                if not p.is_valid(respect_project_mtime):
                     greetings = True
                     print "Sources changed. Recompiling..."
                     p.make()
+                respect_project_mtime = False
                 time.sleep(1)
         except Exception, e:
             die(e)
