@@ -1,4 +1,5 @@
-# INSTALL
+INSTALL
+=======
 
 1. First of all you need to install Google Closure Compiler. To do so please 
 follow:
@@ -28,10 +29,21 @@ Now make it executable:
 
 Create a symbolic link to the script somewere in your PATH:
 
-    $ ln -s ~/Google\ Closure/closure-compiler ~/bin/closure-compiler
+    $ ln -s ~/Google\ Closure/closure-compiler ~/bin/
     
 Now test it and if all ok you will see closure compiler's help message:
     
     $ closure-compiler --help
     
+2. Download jscc files:
+
+    $ git clone git://github.com/troolee/jscc.git
+    
+Make symbolic link:
+
+    $ ln -s jscc/bin/jscc ~/bin/
+    
+And test it now:
+
+    $ jscc
 
