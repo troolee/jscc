@@ -1,4 +1,16 @@
+from __future__ import with_statement
+import os, sys
 from optparse import OptionParser, OptionGroup
+import yaml
+
+from project import JSCCProject
+
+
+def die(msg, code=-1):
+    print >>sys.stderr, 'Error:', msg
+    exit(code)
+
+DEFAULT_PROJECT_FILENAME = 'jscc.yaml'
 
 
 class Manager(object):
@@ -15,16 +27,56 @@ class Manager(object):
         parser.add_option_group(mode_group)
                 
         (options, args) = parser.parse_args(argv)
-        if len(args) > 1:
+        if len(args) > 2:
             parser.error("incorrect number of arguments")
 
         mode = options.mode or 'update'
-        project = args[0] if len(args) > 0 else 'jscc.yml'
+        project = args[1] if len(args) > 1 else DEFAULT_PROJECT_FILENAME
         getattr(self, mode)(project)
         
+    def __get_project_filename(self, project):
+        if project.find('.') == -1:
+            project = '/'.join((project.rstrip('/ '), DEFAULT_PROJECT_FILENAME))
+        return project, os.path.exists(project)               
+        
     def create(self, project):
-        pass
-   
+        filename, exists = self.__get_project_filename(project)
+        
+        if exists:
+            die('Error: Can\'t create project. File "%s" is already exist.' % filename)
+        
+        def mkdir(d):
+            if os.path.exists(d):
+                return
+            os.makedirs(d)
+        root = os.path.dirname(filename) or '.'
+        mkdir(root + '/src')
+        mkdir(root + '/js')
+        with open(filename, 'w') as f:
+            print >>f, '''api_version: 1
+source_dir: src
+output_dir: js                            
+default_compilation_level: simple         # possible values are: whitespace, simple and advanced
+
+#targets:
+#  output_filename-1.js:
+#    compilation_level: advanced         # if specified, overwrites `default_compilation_level`
+#    sources:                            # one or more sources
+#      - input-1.1.js
+#      - input-1.2.js
+#      - input-1.3.js
+#        
+#  output_filename-2.js:
+#    source: input-2.1.js                # only one source
+#      
+#  output_filename-3.js: input-3.1.js    # simplified notation
+'''
+        with open(filename, 'r') as f:
+            try:
+                JSCCProject(yaml.load(f))
+            except Exception, e:
+                die(e)
+           
     def update(self, project):
         pass
    

@@ -34,8 +34,12 @@ Create a symbolic link to the script somewere in your PATH:
 Now test it and if all ok you will see closure compiler's help message:
     
     $ closure-compiler --help
+ 
+2. You need to install PyYAML (http://pyyaml.org/):
     
-2. Download jscc files:
+    $ sudo apt-get install python-yaml
+    
+3. Download jscc files:
 
     $ git clone git://github.com/troolee/jscc.git
     
