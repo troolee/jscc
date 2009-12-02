@@ -39,6 +39,8 @@ class Manager(object):
 
         if options.debug:
             logging.basicConfig(level=logging.DEBUG)
+        else:
+            logging.basicConfig(level=logging.INFO)
 
         mode = options.mode or 'update'
         project = args[1] if len(args) > 1 else DEFAULT_PROJECT_FILENAME

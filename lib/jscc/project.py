@@ -67,6 +67,10 @@ class JSCCTarget:
         if not self.sources:
             return
         
+        if self.is_valid():
+            return
+        print '%s...' % self.target
+        
         def get_cmd(*args):
             args = list(args)
             args.insert(0, self.project.compiler)
