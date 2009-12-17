@@ -120,7 +120,7 @@ default_compilation_level: simple         # possible values are: whitespace, sim
             respect_project_mtime = True
             while True:
                 if greetings:
-                    print ">>> jscc is wathing for changes. Press Ctrl-C to stop."
+                    print ">>> jscc is wating for changes. Press Ctrl-C to stop."
                     greetings = False
                 if not p.is_valid(respect_project_mtime):
                     greetings = True
