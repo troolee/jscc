@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import os
 import itertools
 import logging
@@ -5,6 +6,7 @@ from datetime import datetime
 from subprocess import call
 
 COMPILATION_LEVELS = {
+    'none': None,
     'whitespace': 'WHITESPACE_ONLY',
     'simple': 'SIMPLE_OPTIMIZATIONS',
     'advanced': 'ADVANCED_OPTIMIZATIONS',
@@ -35,6 +37,8 @@ class JSCCTarget:
                 self.sources = [data.pop('source')]
         else:
             raise Exception('Unsupported notation of the target %s.' % target)
+        if project.debug_mode:
+            self.compilation_level = 'none'
             
     def get_target_filename(self):
         return '/'.join((self.project.output_dir, self.target))
@@ -61,15 +65,23 @@ class JSCCTarget:
         logging.debug('Up to date')
         return True
     
-    def make(self):
+    def make(self, force=False):
+        if not force and self.is_valid():
+            return
+        print '%s...' % self.target
+        
         if not self.project.compiler:
             raise Exception('Compiler is not specified.')
         if not self.sources:
             return
-        
-        if self.is_valid():
+
+        if self.compilation_level == 'none':
+            with open(self.get_target_filename(), 'w') as out:
+                for s in self.sources:
+                    fname = self.get_source_filename(s)
+                    with open(fname, 'r') as input:
+                        out.write(input.read())
             return
-        print '%s...' % self.target
         
         def get_cmd(*args):
             args = list(args)
@@ -89,7 +101,10 @@ class JSCCTarget:
             
 
 class JSCCProject:
-    def __init__(self, filename, data, compiler=None):
+    def __init__(self, filename, data, compiler=None, debug_mode=False):
+        logging.debug('Debug mode: %s', debug_mode)
+        self.debug_mode = debug_mode
+        
         self.filename = filename
         self.root_path = '/'.join(os.path.abspath(filename).split('/')[:-1])
         
@@ -115,6 +130,6 @@ class JSCCProject:
                 return False
         return True
     
-    def make(self):
+    def make(self, force=False):
         for target in self.targets:
-            target.make()
+            target.make(force)
