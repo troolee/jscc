@@ -5,3 +5,14 @@ clusure compiler. For more information about closure please
 visit:
 
 http://code.google.com/closure/compiler/
+
+CHANGES
+
+Version 0.3
+
++ Added '--force' option. It forces the program to recompile sources even if
+  they're not changed.
++ Added new compilation level: none. With this option the program will just
+  concatinate source files. Usefull for debugging.
++ Added '--debug-mode' option. It forces the program to use 'none' compilation
+  level.
