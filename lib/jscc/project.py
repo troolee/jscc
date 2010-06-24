@@ -115,7 +115,7 @@ class JSCCProject:
         self.source_dir = self.root_path + '/' + data.pop('source_dir', 'src')
         self.output_dir = self.root_path + '/' + data.pop('output_dir', 'js')
         self.default_compilation_level = data.pop('default_compilation_level', 'simple')
-        if self.default_compilation_level not in ['whitespace', 'simple', 'advanced']:
+        if self.default_compilation_level not in COMPILATION_LEVELS.keys():
             raise Exception('Unsupported level of compilation: %s' % self.default_compilation_level)
         self.targets = []
         for target_data in data.pop('targets', {}).items():
