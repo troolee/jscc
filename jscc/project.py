@@ -39,10 +39,10 @@ class JSCCTarget:
             self.compilation_level = 'none'
 
     def get_target_filename(self):
-        return '/'.join((self.project.output_dir, self.target))
+        return os.path.join(self.project.output_dir, self.target)
 
     def get_source_filename(self, source):
-        return '/'.join((self.project.source_dir, source))
+        return os.path.join(self.project.source_dir, source)
 
     def is_valid(self, respect_project_mtime=False):
         logging.debug('Checking target %s', self.target)
@@ -104,14 +104,14 @@ class JSCCProject:
         self.debug_mode = debug_mode
 
         self.filename = filename
-        self.root_path = '/'.join(os.path.abspath(filename).split('/')[:-1])
+        self.root_path = os.path.abspath(os.path.dirname(filename))
 
         self.compiler = compiler
         self.api_version = data.pop('api_version', '1')
         if self.api_version != 1:
             raise Exception('Unsupported api version: %s' % self.api_version)
-        self.source_dir = self.root_path + '/' + data.pop('source_dir', 'src')
-        self.output_dir = self.root_path + '/' + data.pop('output_dir', 'js')
+        self.source_dir = os.path.join(self.root_path, data.pop('source_dir', 'src'))
+        self.output_dir = os.path.join(self.root_path, data.pop('output_dir', 'js'))
         self.default_compilation_level = data.pop('default_compilation_level', 'simple')
         if self.default_compilation_level not in COMPILATION_LEVELS.keys():
             raise Exception('Unsupported level of compilation: %s' % self.default_compilation_level)

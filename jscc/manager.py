@@ -67,8 +67,8 @@ class Manager(object):
                 return
             os.makedirs(d)
         root = os.path.dirname(filename) or '.'
-        mkdir(root + '/src')
-        mkdir(root + '/js')
+        mkdir(os.path.join(root, 'src'))
+        mkdir(os.path.join(root, 'js'))
         with open(filename, 'w') as f:
             print >>f, '''api_version: 1
 source_dir: src
