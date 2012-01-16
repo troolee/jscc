@@ -71,23 +71,23 @@ class Manager(object):
         mkdir(os.path.join(root, 'js'))
         with open(filename, 'w') as f:
             print >>f, '''api_version: 1
-source_dir: src
-output_dir: js
-default_compilation_level: simple         # possible values are: whitespace, simple and advanced
+            source_dir: src
+            output_dir: js
+            default_compilation_level: simple         # possible values are: whitespace, simple and advanced
 
-#targets:
-#  output_filename-1.js:
-#    compilation_level: advanced         # if specified, overwrites `default_compilation_level`
-#    sources:                            # one or more sources
-#      - input-1.1.js
-#      - input-1.2.js
-#      - input-1.3.js
-#
-#  output_filename-2.js:
-#    source: input-2.1.js                # only one source
-#
-#  output_filename-3.js: input-3.1.js    # simplified notation
-'''
+            #targets:
+            #  output_filename-1.js:
+            #    compilation_level: advanced         # if specified, overwrites `default_compilation_level`
+            #    sources:                            # one or more sources
+            #      - input-1.1.js
+            #      - input-1.2.js
+            #      - input-1.3.js
+            #
+            #  output_filename-2.js:
+            #    source: input-2.1.js                # only one source
+            #
+            #  output_filename-3.js: input-3.1.js    # simplified notation
+            '''
         with open(filename, 'r') as f:
             try:
                 JSCCProject(filename, yaml.load(f))
